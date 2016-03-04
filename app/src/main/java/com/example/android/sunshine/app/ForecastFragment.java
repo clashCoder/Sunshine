@@ -1,13 +1,21 @@
 package com.example.android.sunshine.app;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,7 +23,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 /**
  * Created by itachiuchiha on 3/1/16.
@@ -30,6 +40,37 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
     ListView listView;
 
     public ForecastFragment() {
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceBundle) {
+        super.onCreate(savedInstanceBundle);
+
+        //let this fragment handle menu events
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+
+        inflater.inflate(R.menu.forecastfragment, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        if (id == R.id.action_refresh) {
+
+            FetchWeatherTask fetchWeatherTask = new FetchWeatherTask();
+            fetchWeatherTask.execute("94040");
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -85,13 +126,118 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
         return rootView;
     }
 
-
-    public class FetchWeatherTask extends AsyncTask<Void, Void, Void> {
+    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
         private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 
+        /* The date/time conversion code is going to be moved outside the asynctask later,
+         * so for convenience we're breaking it out into its own method now
+         * -- method obtained from udacity "Sunshine-Version-2" GitHub repository
+         */
+        private String getReadableDateString(long time) {
+            // Because the API returns a unix timestamp (measured in seconds),
+            // it must be converted to milliseconds in order to be converted to valid date.
+            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
+            return shortenedDateFormat.format(time);
+        }
+
+        /*
+         * Prepare the weather high/lows for presentation
+         * -- method obtained from udacity "Sunshine-Version-2" GitHub repository
+         */
+
+        private String formatHighLows(double high, double low) {
+            //For presentation, assume the user doesn't care about tenths of a degree.
+            long roundedHigh = Math.round(high);
+            long roundedLow = Math.round(low);
+
+            String highLowStr = roundedHigh + "/" + roundedLow;
+            return highLowStr;
+        }
+
+        /*
+         * Take the String representing the complete forecast in JSON Format and
+         * pull out the data we need to construct the Strings needed for the wireframes.
+         *
+         * Fortunately parsing is easy:  constructor takes the JSON string and converts it
+         * into an Object hierarchy for us.
+         * --method signature obtained from udacity "Sunshine-Version-2" GitHub repository
+         */
+        private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays)
+            throws JSONException {
+
+
+            /*
+             * we want each string the array to be in the following format:
+             *
+             *     day - weatherCondition - maxTemperature/minTemperature
+             *
+             */
+
+            String[] data = new String[numDays];
+
+            //Calendar CurrentDay = Calendar.getInstance();
+            //C.add(Calendar.DATE,1); -> method to add a day to the calendar
+            //long time = CurrentDay.getTimeInMillis();
+            //String day = getReadableDateString(time);
+
+            //data[0] = getReadableDateString(time);
+
+            JSONObject forecastJsonObj = new JSONObject(forecastJsonStr);
+            JSONArray dataForecast = forecastJsonObj.getJSONArray("list");
+
+            for (int i = 0; i < numDays; i++) {
+
+                Calendar C = Calendar.getInstance();
+                C.add(Calendar.DATE,i);
+                long t = C.getTimeInMillis();
+                String day = getReadableDateString(t);
+                //data[i] = getReadableDateString(t);
+
+                JSONObject dataForecastObj = dataForecast.getJSONObject(i);
+
+                JSONObject temperatureObj = dataForecastObj.getJSONObject("temp");
+                double maxTemperature = temperatureObj.getDouble("max");
+                double minTemperature = temperatureObj.getDouble("min");
+
+                JSONArray weatherArr = dataForecastObj.getJSONArray("weather");
+                JSONObject weatherMain = weatherArr.getJSONObject(0);
+                String weatherCondition = weatherMain.getString("main");
+
+                String result = day + " - " + weatherCondition + " - " +
+                                    maxTemperature + "/" + minTemperature;
+
+                data[i] = result;
+
+            }
+
+            for (String s: data) {
+                Log.v(LOG_TAG, "WeatherData is: " + s);
+            }
+
+
+            //Log.v(LOG_TAG, "Day is: " + day);
+
+            return null;
+        }
+
+
         @Override
-        protected Void doInBackground(Void... params) {
+        protected String[] doInBackground(String... params) {
+
+            //if string is empty then no postcode passed in
+            if (params.length == 0) {
+                return null;
+            }
+
+            String countryISO = "840";
+            String days = "7";
+            String q_val = params[0] + "," + countryISO;
+            String units = "metric";
+            String mode = "json";
+            String app_id = "put_your_API_Key_here";    //put API Key or will get FileNotFoundException
+
+
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
             HttpURLConnection urlConnection = null;
@@ -104,7 +250,26 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                 // Construct the URL for the OpenWeatherMap query
                 // Possible parameters are avaiable at OWM's forecast API page, at
                 // http://openweathermap.org/API#forecast
-                URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7");
+
+                Uri.Builder builder = new Uri.Builder();
+
+                builder.scheme("http")
+                        .authority("api.openweathermap.org")
+                        .appendPath("data")
+                        .appendPath("2.5")
+                        .appendPath("forecast")
+                        .appendPath("daily")
+                        .appendQueryParameter("q", q_val)
+                        .appendQueryParameter("mode", mode)
+                        .appendQueryParameter("units", units)
+                        .appendQueryParameter("cnt", days)
+                        .appendQueryParameter("appid", app_id);
+
+                String myUrl = builder.build().toString();
+                //URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94040,840&mode=json&units=metric&cnt=7&appid=insertAPIKEYHere");
+                URL url = new URL(myUrl);
+
+                Log.v(LOG_TAG, "Built URL from Uri.Builder " + myUrl);
 
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -133,6 +298,10 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                     return null;
                 }
                 forecastJsonStr = buffer.toString();
+
+                // to verify data returned is correct
+                Log.v(LOG_TAG, "Forecast JSON String: " + forecastJsonStr);
+
             } catch (IOException e) {
                 Log.e("PlaceholderFragment", "Error ", e);
                 // If the code didn't successfully get the weather data, there's no point in attemping
@@ -151,7 +320,17 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                 }
             }
 
+            try {
+                int numOfDays = 7;
+                return getWeatherDataFromJson(forecastJsonStr,numOfDays);
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, e.getMessage(), e);
+                e.printStackTrace();
+            }
+
+
             return null;
         }
     }
+
 }
