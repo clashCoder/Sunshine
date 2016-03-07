@@ -10,8 +10,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,8 +38,8 @@ import java.util.Calendar;
 public class ForecastFragment extends android.support.v4.app.Fragment {
 
 
-    ArrayAdapter<String> weatherAdapter;        //weather adapter for weather forecast
-    ListView listView;
+    private ArrayAdapter<String> weatherAdapter;        //weather adapter for weather forecast
+    private ListView listView;
 
     public ForecastFragment() {
     }
@@ -123,6 +125,15 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
         //so to get appropriate view we must get the root view from the fragment layout
         listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(weatherAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                String weatherInfo = (String) listView.getItemAtPosition(i);
+                Toast.makeText(getActivity(), weatherInfo, Toast.LENGTH_LONG).show();
+            }
+        });
+
         return rootView;
     }
 
@@ -199,26 +210,27 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                 JSONObject temperatureObj = dataForecastObj.getJSONObject("temp");
                 double maxTemperature = temperatureObj.getDouble("max");
                 double minTemperature = temperatureObj.getDouble("min");
+                String temperature = formatHighLows(maxTemperature, minTemperature);
 
                 JSONArray weatherArr = dataForecastObj.getJSONArray("weather");
                 JSONObject weatherMain = weatherArr.getJSONObject(0);
                 String weatherCondition = weatherMain.getString("main");
 
                 String result = day + " - " + weatherCondition + " - " +
-                                    maxTemperature + "/" + minTemperature;
+                                    temperature;
 
                 data[i] = result;
 
             }
 
-            for (String s: data) {
+            /*for (String s: data) {
                 Log.v(LOG_TAG, "WeatherData is: " + s);
-            }
+            }*/
 
 
             //Log.v(LOG_TAG, "Day is: " + day);
 
-            return null;
+            return data;
         }
 
 
@@ -269,7 +281,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                 //URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94040,840&mode=json&units=metric&cnt=7&appid=insertAPIKEYHere");
                 URL url = new URL(myUrl);
 
-                Log.v(LOG_TAG, "Built URL from Uri.Builder " + myUrl);
+                //Log.v(LOG_TAG, "Built URL from Uri.Builder " + myUrl);
 
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -300,7 +312,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                 forecastJsonStr = buffer.toString();
 
                 // to verify data returned is correct
-                Log.v(LOG_TAG, "Forecast JSON String: " + forecastJsonStr);
+                //Log.v(LOG_TAG, "Forecast JSON String: " + forecastJsonStr);
 
             } catch (IOException e) {
                 Log.e("PlaceholderFragment", "Error ", e);
@@ -330,6 +342,17 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
 
 
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(String[] result) {
+
+            if (result != null) {
+                weatherAdapter.clear();
+                for (String s: result) {
+                    weatherAdapter.add(s);
+                }
+            }
         }
     }
 
