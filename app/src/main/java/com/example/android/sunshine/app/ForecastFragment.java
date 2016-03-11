@@ -1,9 +1,11 @@
 package com.example.android.sunshine.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -67,9 +69,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
         int id = item.getItemId();
 
         if (id == R.id.action_refresh) {
-
-            FetchWeatherTask fetchWeatherTask = new FetchWeatherTask();
-            fetchWeatherTask.execute("94040");
+            updateWeather();
             return true;
         }
 
@@ -119,7 +119,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                 //ID of textview to populate
                 R.id.list_item_forecast_textview,
                 //weather forecast data
-                weatherList);
+                new ArrayList<String>());
 
         //listView = (ListView) this.findViewById(R.id.listview_forecast);
         //above does not work because we are not currently in a View object but a fragment object
@@ -142,6 +142,25 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
         });
 
         return rootView;
+    }
+
+    private void updateWeather() {
+        FetchWeatherTask fetchWeatherTask = new FetchWeatherTask();
+
+        //Context context = getActivity();
+        //SharedPreferences userPref = context.getSharedPreferences("pref_general", Context.MODE_PRIVATE);
+
+        SharedPreferences userPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String zipCode = userPref.getString(getString(R.string.pref_location_key),getString(R.string.pref_location_default));
+        //fetchWeatherTask.execute("94040");
+        Log.v("IN_OPTIONS", "Zipcode String: " + zipCode);
+        fetchWeatherTask.execute(zipCode);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
     }
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
@@ -288,7 +307,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                 //URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94040,840&mode=json&units=metric&cnt=7&appid=insertAPIKEYHere");
                 URL url = new URL(myUrl);
 
-                //Log.v(LOG_TAG, "Built URL from Uri.Builder " + myUrl);
+                Log.v(LOG_TAG, "Built URL from Uri.Builder " + myUrl);
 
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -319,7 +338,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                 forecastJsonStr = buffer.toString();
 
                 // to verify data returned is correct
-                //Log.v(LOG_TAG, "Forecast JSON String: " + forecastJsonStr);
+                Log.v(LOG_TAG, "Forecast JSON String: " + forecastJsonStr);
 
             } catch (IOException e) {
                 Log.e("PlaceholderFragment", "Error ", e);
