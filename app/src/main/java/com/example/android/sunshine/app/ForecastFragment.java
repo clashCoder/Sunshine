@@ -40,6 +40,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
 
     private ArrayAdapter<String> weatherAdapter;        //weather adapter for weather forecast
     private ListView listView;
+    //public final static String EXTRA_MESSAGE = "com.example.android.sunshine.app";
 
     public ForecastFragment() {
     }
@@ -134,7 +135,8 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
 
                 Intent detailIntent = new Intent(getActivity(), DetailActivity.class);
                 //startService(detailIntent);
-                //detailIntent.putExtra("weatherInfo", weatherInfo);
+                //detailIntent.putExtra(EXTRA_MESSAGE, weatherInfo);
+                detailIntent.putExtra(Intent.EXTRA_TEXT, weatherInfo);
                 startActivity(detailIntent);
             }
         });
