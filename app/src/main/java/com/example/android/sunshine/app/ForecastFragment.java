@@ -153,7 +153,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
         SharedPreferences userPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String zipCode = userPref.getString(getString(R.string.pref_location_key),getString(R.string.pref_location_default));
         //fetchWeatherTask.execute("94040");
-        Log.v("IN_OPTIONS", "Zipcode String: " + zipCode);
+        //Log.v("IN_OPTIONS", "Zipcode String: " + zipCode);
         fetchWeatherTask.execute(zipCode);
     }
 
@@ -183,7 +183,16 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
          * -- method obtained from udacity "Sunshine-Version-2" GitHub repository
          */
 
-        private String formatHighLows(double high, double low) {
+        private String formatHighLows(double high, double low, String unitType) {
+
+            //convert from metric to imperial
+            if (unitType.equals(getString(R.string.pref_temperature_unit_imperial))) {
+                high = (high * 1.8) + 32;
+                low = (low * 1.8) + 32;
+            }
+            else if (!unitType.equals(getString(R.string.pref_temperature_unit_metric))) {
+                Log.d(LOG_TAG, "Unit type not found: " + unitType);
+            }
             //For presentation, assume the user doesn't care about tenths of a degree.
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
@@ -223,6 +232,10 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
             JSONObject forecastJsonObj = new JSONObject(forecastJsonStr);
             JSONArray dataForecast = forecastJsonObj.getJSONArray("list");
 
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String unitType = sharedPreferences.getString(getString(R.string.pref_temperature_unit_key),
+                                    getString(R.string.pref_temperature_unit_metric));
+
             for (int i = 0; i < numDays; i++) {
 
                 Calendar C = Calendar.getInstance();
@@ -236,7 +249,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                 JSONObject temperatureObj = dataForecastObj.getJSONObject("temp");
                 double maxTemperature = temperatureObj.getDouble("max");
                 double minTemperature = temperatureObj.getDouble("min");
-                String temperature = formatHighLows(maxTemperature, minTemperature);
+                String temperature = formatHighLows(maxTemperature, minTemperature, unitType);
 
                 JSONArray weatherArr = dataForecastObj.getJSONArray("weather");
                 JSONObject weatherMain = weatherArr.getJSONObject(0);
@@ -274,7 +287,6 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
             String units = "metric";
             String mode = "json";
             String app_id = "put_your_API_Key_here";    //put API Key or will get FileNotFoundException
-
 
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.

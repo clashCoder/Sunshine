@@ -33,6 +33,7 @@ public class SettingsActivity extends PreferenceActivity
         // updated when the preference changes.
         // TODO: Add preferences
         bindPreferencesSummaryToValue(findPreference(getString(R.string.pref_location_key)));
+        bindPreferencesSummaryToValue(findPreference(getString(R.string.pref_temperature_unit_key)));
     }
 
     /**
