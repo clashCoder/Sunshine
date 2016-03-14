@@ -19,6 +19,9 @@
     <!-- Menu label to view the user's preferred location -->
     <string name="action_map">Map</string>
 
+    <!-- Menu label for item share -->
+    <string name="action_share">Share</string>
+
     <!-- Menu label to fetch updated weather info from the server -->
     <string name="action_refresh" translatable="false">Refresh</string>
     <string name="title_activity_detail">DetailActivity</string>

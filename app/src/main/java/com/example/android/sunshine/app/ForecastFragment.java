@@ -287,7 +287,6 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
             String units = "metric";
             String mode = "json";
             String app_id = "put_your_API_Key_here";    //put API Key or will get FileNotFoundException
-
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
             HttpURLConnection urlConnection = null;

@@ -19,9 +19,13 @@ package com.example.android.sunshine.app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.ShareActionProvider;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -80,8 +84,12 @@ public class DetailActivity extends ActionBarActivity {
 
     public static class DetailFragment extends Fragment {
 
-        public DetailFragment() {
+        private String weatherInfo;
+        private static final String FORECAST_SHARE_HASHTAG = " #SunshineApp";
+        private static final String LOG_TAG = DetailFragment.class.getSimpleName();
 
+        public DetailFragment() {
+            setHasOptionsMenu(true);
         }
 
         @Override
@@ -92,7 +100,7 @@ public class DetailActivity extends ActionBarActivity {
             Intent intent = getActivity().getIntent();
 
             if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
-                String weatherInfo = intent.getStringExtra(Intent.EXTRA_TEXT);
+                weatherInfo = intent.getStringExtra(Intent.EXTRA_TEXT);
 
                 // get TextView object present in fragment_detail.xml
                 TextView textView = (TextView) rootView.findViewById(R.id.detail_text);
@@ -102,6 +110,34 @@ public class DetailActivity extends ActionBarActivity {
             }
 
             return rootView;
+        }
+
+        @Override
+        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+            //Inflate the menu; this adds items to the action bar if it is present
+            inflater.inflate(R.menu.detailfragment, menu);
+
+            //Retrieve the share menu item
+            MenuItem menuItem = menu.findItem(R.id.action_share);
+
+
+            // Get the provider and hold onto it to set/change the share intent.
+            ShareActionProvider mShareActionProvider =
+                    (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+
+            if (mShareActionProvider != null) {
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_TEXT, weatherInfo + FORECAST_SHARE_HASHTAG);
+                mShareActionProvider.setShareIntent(intent);
+            }
+            else {
+                Log.d(LOG_TAG, "Share Action Provider is null?");
+            }
+
+
+
         }
     }
 
