@@ -306,6 +306,9 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             // add to database
             if ( cVVector.size() > 0 ) {
                 // Student: call bulkInsert to add the weatherEntries to the database here
+                ContentValues[] cvArray = new ContentValues[cVVector.size()];
+                cVVector.toArray(cvArray);
+                mContext.getContentResolver().bulkInsert(WeatherEntry.CONTENT_URI, cvArray);
             }
 
             // Sort order:  Ascending, by date.
@@ -359,7 +362,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
         String format = "json";
         String units = "metric";
         int numDays = 14;
-        String appid = "add_your_APIKEY_here";      // insert API Key here or put in
+        String appid = "insert_your_API_KEY_here";      // insert API Key here or put in
                                                     // Android Manifest and buildConfig
 
         try {
@@ -450,6 +453,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             mForecastAdapter.clear();
             for(String dayForecastStr : result) {
                 mForecastAdapter.add(dayForecastStr);
+                Log.v(LOG_TAG, "this is the data: " + dayForecastStr);
             }
             // New data is back from the server.  Hooray!
         }
