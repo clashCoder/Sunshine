@@ -99,13 +99,22 @@ public class DetailActivity extends ActionBarActivity {
 
             Intent intent = getActivity().getIntent();
 
-            if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
+            /*if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
                 weatherInfo = intent.getStringExtra(Intent.EXTRA_TEXT);
 
                 // get TextView object present in fragment_detail.xml
                 TextView textView = (TextView) rootView.findViewById(R.id.detail_text);
 
                 // set the text of the TextView to that of the tab pressed
+                textView.setText(weatherInfo);
+            }*/
+
+            if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
+                weatherInfo = intent.getStringExtra(Intent.EXTRA_TEXT);
+            }
+
+            if (weatherInfo != null) {
+                TextView textView = (TextView) rootView.findViewById(R.id.detail_text);
                 textView.setText(weatherInfo);
             }
 
