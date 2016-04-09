@@ -5,6 +5,9 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,11 +24,13 @@ import com.example.android.sunshine.app.data.WeatherContract;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class ForecastFragment extends android.support.v4.app.Fragment {
+public class ForecastFragment extends android.support.v4.app.Fragment
+        implements LoaderManager.LoaderCallbacks<Cursor>{
 
 
     private ForecastAdapter weatherAdapter;        //weather adapter for weather forecast
     private ListView listView;
+    private static final int MY_LOADER_ID = 0;
     //public final static String EXTRA_MESSAGE = "com.example.android.sunshine.app";
 
     public ForecastFragment() {
@@ -109,7 +114,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
         //above does not work because we are not currently in a View object but a fragment object
         //so to get appropriate view we must get the root view from the fragment layout
 
-        String locationSetting = Utility.getPreferredLocation(getActivity());
+        /*String locationSetting = Utility.getPreferredLocation(getActivity());
 
         // Sort order: Ascending, by date.
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
@@ -118,16 +123,11 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
         );
 
         Cursor cur = getActivity().getContentResolver().query(weatherForLocationUri,
-                null, null, null, sortOrder);
+                null, null, null, sortOrder);*/
 
         // The CursorAdapter will take data from our cursor and populate the ListView
         // However, we cannot use FLAG_AUTO_REQUERY since it is deprecated, so we will end
         // up with an empty list the first time we run.
-        weatherAdapter = new ForecastAdapter(getActivity(), cur, 0);
-
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        listView = (ListView) rootView.findViewById(R.id.listview_forecast);
-        listView.setAdapter(weatherAdapter);
 
         /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -142,6 +142,11 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                 startActivity(detailIntent);
             }
         });*/
+
+        weatherAdapter = new ForecastAdapter(getActivity(), null, 0);
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        listView = (ListView) rootView.findViewById(R.id.listview_forecast);
+        listView.setAdapter(weatherAdapter);
 
         return rootView;
     }
@@ -163,6 +168,48 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
     public void onStart() {
         super.onStart();
         updateWeather();
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        getLoaderManager().initLoader(MY_LOADER_ID, null, this);
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+        String locationSetting = Utility.getPreferredLocation(getActivity());
+
+        // Sort order: Ascending, by date.
+        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
+                locationSetting, System.currentTimeMillis()
+        );
+
+
+        return new CursorLoader(
+                getActivity(),
+                weatherForLocationUri,
+                null,
+                null,
+                null,
+                sortOrder);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        // Swap the new cursor in. (The framework will take care of closing
+        // the old cursor once we return.)
+        weatherAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        // This is called when the last Cursor provided to onLoadFinished()
+        // above is about to be closed. We need to make sure we are no
+        // longer using it.
+        weatherAdapter.swapCursor(null);
     }
 
 //    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
