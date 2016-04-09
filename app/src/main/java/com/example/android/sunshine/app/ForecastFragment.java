@@ -1,7 +1,8 @@
 package com.example.android.sunshine.app;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
@@ -10,11 +11,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import java.util.ArrayList;
+import com.example.android.sunshine.app.data.WeatherContract;
 
 /**
  * Created by itachiuchiha on 3/1/16.
@@ -25,7 +24,7 @@ import java.util.ArrayList;
 public class ForecastFragment extends android.support.v4.app.Fragment {
 
 
-    private ArrayAdapter<String> weatherAdapter;        //weather adapter for weather forecast
+    private ForecastAdapter weatherAdapter;        //weather adapter for weather forecast
     private ListView listView;
     //public final static String EXTRA_MESSAGE = "com.example.android.sunshine.app";
 
@@ -64,19 +63,19 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        //View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         //create array of "fake" data
 
 
-        ArrayList<String> weatherList = new ArrayList<String>();
+        /*ArrayList<String> weatherList = new ArrayList<String>();
         weatherList.add("Today - Sunny - 88/63");
         weatherList.add("Tomorrow - Foggy - 70/46");
         weatherList.add("Weds - Cloudy - 72/63");
         weatherList.add("Thurs - Rainy - 64/51");
         weatherList.add("Fri - Foggy - 70/46");
         weatherList.add("Sat - Sunny - 76/68");
-        weatherList.add("Sun - Sunny - 82/63");
+        weatherList.add("Sun - Sunny - 82/63");*/
 
             /*code in tutorial in case my method does not work
 
@@ -96,7 +95,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
 
         //The ArrayAdapter will take data from a source and use it to populate the ListView it is
         //attached to.
-        weatherAdapter = new ArrayAdapter<String>(
+        /*weatherAdapter = new ArrayAdapter<String>(
                 //the current content(this fragment's parent activity)
                 getActivity(),
                 //ID of list item layout
@@ -104,15 +103,33 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                 //ID of textview to populate
                 R.id.list_item_forecast_textview,
                 //weather forecast data
-                new ArrayList<String>());
+                new ArrayList<String>());*/
 
         //listView = (ListView) this.findViewById(R.id.listview_forecast);
         //above does not work because we are not currently in a View object but a fragment object
         //so to get appropriate view we must get the root view from the fragment layout
+
+        String locationSetting = Utility.getPreferredLocation(getActivity());
+
+        // Sort order: Ascending, by date.
+        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
+                locationSetting, System.currentTimeMillis()
+        );
+
+        Cursor cur = getActivity().getContentResolver().query(weatherForLocationUri,
+                null, null, null, sortOrder);
+
+        // The CursorAdapter will take data from our cursor and populate the ListView
+        // However, we cannot use FLAG_AUTO_REQUERY since it is deprecated, so we will end
+        // up with an empty list the first time we run.
+        weatherAdapter = new ForecastAdapter(getActivity(), cur, 0);
+
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(weatherAdapter);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String weatherInfo = (String) listView.getItemAtPosition(i);
@@ -124,13 +141,13 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                 detailIntent.putExtra(Intent.EXTRA_TEXT, weatherInfo);
                 startActivity(detailIntent);
             }
-        });
+        });*/
 
         return rootView;
     }
 
     private void updateWeather() {
-        FetchWeatherTask fetchWeatherTask = new FetchWeatherTask(getActivity(), weatherAdapter);
+        FetchWeatherTask fetchWeatherTask = new FetchWeatherTask(getActivity());
 
         //Context context = getActivity();
         //SharedPreferences userPref = context.getSharedPreferences("pref_general", Context.MODE_PRIVATE);
