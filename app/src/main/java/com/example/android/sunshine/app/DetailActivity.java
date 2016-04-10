@@ -17,8 +17,12 @@
 package com.example.android.sunshine.app;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.ShareActionProvider;
@@ -30,6 +34,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.example.android.sunshine.app.data.WeatherContract;
 
 public class DetailActivity extends ActionBarActivity {
 
@@ -82,11 +88,32 @@ public class DetailActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public static class DetailFragment extends Fragment {
+    public static class DetailFragment extends Fragment implements LoaderCallbacks<Cursor>{
 
         private String weatherInfo;
         private static final String FORECAST_SHARE_HASHTAG = " #SunshineApp";
         private static final String LOG_TAG = DetailFragment.class.getSimpleName();
+        private ShareActionProvider mShareActionProvider;
+
+        private static final int DETAIL_LOADER_ID = 0;
+
+        private static final String[] FORECAST_COLUMNS = {
+                WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
+                WeatherContract.WeatherEntry.COLUMN_DATE,
+                WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+                WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+                WeatherContract.WeatherEntry.COLUMN_MIN_TEMP
+        };
+
+        // these constants correspond to the projection defined above, and must change if
+        // the projection changes
+        private static final int COL_WEATHER_ID = 0;
+        private static final int COL_WEATHER_DATE = 1;
+        private static final int COL_WEATHER_DESC = 2;
+        private static final int COL_WEATHER_MAX_TEMP = 3;
+        private static final int COL_WEATHER_MIN_TEMP = 4;
+
+
 
         public DetailFragment() {
             setHasOptionsMenu(true);
@@ -97,7 +124,11 @@ public class DetailActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
 
-            Intent intent = getActivity().getIntent();
+            /*Intent intent = getActivity().getIntent();
+
+            if (intent != null) {
+                weatherInfo = intent.getDataString();
+            }*/
 
             /*if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
                 weatherInfo = intent.getStringExtra(Intent.EXTRA_TEXT);
@@ -109,14 +140,14 @@ public class DetailActivity extends ActionBarActivity {
                 textView.setText(weatherInfo);
             }*/
 
-            if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
+            /*if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
                 weatherInfo = intent.getStringExtra(Intent.EXTRA_TEXT);
-            }
+            }*/
 
-            if (weatherInfo != null) {
+            /*if (weatherInfo != null) {
                 TextView textView = (TextView) rootView.findViewById(R.id.detail_text);
                 textView.setText(weatherInfo);
-            }
+            }*/
 
             return rootView;
         }
@@ -131,23 +162,80 @@ public class DetailActivity extends ActionBarActivity {
 
 
             // Get the provider and hold onto it to set/change the share intent.
-            ShareActionProvider mShareActionProvider =
-                    (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+            /*ShareActionProvider mShareActionProvider =
+                    (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);*/
 
-            if (mShareActionProvider != null) {
+            mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+
+            if (weatherInfo != null) {
                 Intent intent = new Intent(Intent.ACTION_SEND);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
                 intent.setType("text/plain");
                 intent.putExtra(Intent.EXTRA_TEXT, weatherInfo + FORECAST_SHARE_HASHTAG);
                 mShareActionProvider.setShareIntent(intent);
             }
-            else {
-                Log.d(LOG_TAG, "Share Action Provider is null?");
-            }
-
-
 
         }
+
+        @Override
+        public void onActivityCreated(Bundle savedInstanceState) {
+            getLoaderManager().initLoader(DETAIL_LOADER_ID, null, this);
+            super.onActivityCreated(savedInstanceState);
+        }
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            Log.v(LOG_TAG, "In onCreateLoader");
+            Intent intent = getActivity().getIntent();
+
+            if (intent == null) {
+                return null;
+            }
+
+            // Now create and return a CursorLoader that will take care of creating a Cursor for the
+            // data being displayed.
+            return new CursorLoader(
+                    getActivity(),
+                    intent.getData(),
+                    FORECAST_COLUMNS,
+                    null,
+                    null,
+                    null
+            );
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            Log.v(LOG_TAG, "In onLoadFinished");
+
+            if (!data.moveToFirst()) {
+                return;
+            }
+
+            String dateString = Utility.formatDate(data.getLong(COL_WEATHER_DATE));
+            String weatherDesc = data.getString(COL_WEATHER_DESC);
+            boolean isMetric = Utility.isMetric(getActivity());
+            String high = Utility.formatTemperature(data.getDouble(COL_WEATHER_MAX_TEMP), isMetric);
+            String low = Utility.formatTemperature(data.getDouble(COL_WEATHER_MIN_TEMP), isMetric);
+
+            weatherInfo = String.format("%s - %s - %s/%s", dateString, weatherDesc, high, low);
+            Log.d(LOG_TAG, "weatherInfo: " + weatherInfo);
+
+            TextView detailTextView = (TextView) getView().findViewById(R.id.detail_text);
+            detailTextView.setText(weatherInfo);
+
+            // If onCreateOptionsMenu has already happened, we need to update the share intent now.
+            if (mShareActionProvider != null) {
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+                shareIntent.setType("text/plain");
+                shareIntent.putExtra(Intent.EXTRA_TEXT, weatherInfo + FORECAST_SHARE_HASHTAG);
+                mShareActionProvider.setShareIntent(shareIntent);
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {}
     }
 
 }

@@ -1,5 +1,6 @@
 package com.example.android.sunshine.app;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -14,6 +15,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.example.android.sunshine.app.data.WeatherContract;
@@ -30,7 +32,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment
 
     private ForecastAdapter weatherAdapter;        //weather adapter for weather forecast
     private ListView listView;
-    private static final int MY_LOADER_ID = 0;
+    private static final int FORECAST_LOADER_ID = 0;
     private static final String[] FORECAST_COLUMNS = {
             // In this case the id needs to be fully qualified with a table name, since
             // the content provider joins the location & weather tables in the background
@@ -177,6 +179,24 @@ public class ForecastFragment extends android.support.v4.app.Fragment
         listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(weatherAdapter);
 
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView adapterView, View view, int position, long l) {
+                // CursorAdapter returns a cursor at the correct position for getItem(), or null
+                // if it cannot seek to that position.
+                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
+                if (cursor != null) {
+                    String locationSetting = Utility.getPreferredLocation(getActivity());
+                    Intent intent = new Intent(getActivity(), DetailActivity.class)
+                            .setData(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
+                                    locationSetting, cursor.getLong(COL_WEATHER_DATE)
+                            ));
+                    startActivity(intent);
+                }
+            }
+        });
+
         return rootView;
     }
 
@@ -193,15 +213,20 @@ public class ForecastFragment extends android.support.v4.app.Fragment
         fetchWeatherTask.execute(zipCode);
     }
 
+    void onLocationChanged() {
+        updateWeather();
+        getLoaderManager().restartLoader(FORECAST_LOADER_ID, null, this);
+    }
+
     @Override
     public void onStart() {
         super.onStart();
-        updateWeather();
+        //updateWeather();
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        getLoaderManager().initLoader(MY_LOADER_ID, null, this);
+        getLoaderManager().initLoader(FORECAST_LOADER_ID, null, this);
         super.onActivityCreated(savedInstanceState);
     }
 

@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 public class ForecastAdapter extends CursorAdapter{
+
+    private final String LOG_TAG = "ForecastAdapter";
     public ForecastAdapter(Context context, Cursor c, int flags) {
         super(context,c,flags);
     }
@@ -19,6 +21,7 @@ public class ForecastAdapter extends CursorAdapter{
     private String formatHighLows(double high, double low) {
         boolean isMetric = Utility.isMetric(mContext);
         String highLowStr = Utility.formatTemperature(high, isMetric) + "/" + Utility.formatTemperature(low, isMetric);
+        /*Log.v(LOG_TAG, "formatHighLows gives: " + highLowStr);*/
         return highLowStr;
     }
 
@@ -36,6 +39,12 @@ public class ForecastAdapter extends CursorAdapter{
                 cursor.getDouble(ForecastFragment.COL_WEATHER_MAX_TEMP),
                 cursor.getDouble(ForecastFragment.COL_WEATHER_MIN_TEMP)
         );
+
+        String date = Utility.formatDate(cursor.getLong(ForecastFragment.COL_WEATHER_DATE));
+        String desc = cursor.getString(ForecastFragment.COL_WEATHER_DESC);
+
+        /*Log.v(LOG_TAG, "date: " + date + ", desc: " + desc + ", highAndLow: " + highAndLow);*/
+
 
         return Utility.formatDate(cursor.getLong(ForecastFragment.COL_WEATHER_DATE)) +
                 " - " + cursor.getString(ForecastFragment.COL_WEATHER_DESC) +
