@@ -14,6 +14,7 @@ public class ForecastAdapter extends CursorAdapter{
     private final String LOG_TAG = "ForecastAdapter";
     private final int VIEW_TYPE_TODAY = 0;
     private final int VIEW_TYPE_FUTURE_DAY = 1;
+    //SparseBooleanArray selectionArray = new SparseBooleanArray();
     public ForecastAdapter(Context context, Cursor c, int flags) {
         super(context,c,flags);
     }
@@ -102,6 +103,13 @@ public class ForecastAdapter extends CursorAdapter{
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
 
+        int position = cursor.getPosition();
+//        boolean isSelected = selectionArray.get(position);
+//
+//        if (isSelected) {
+//            view.setBackgroundColor(Color.WHITE);
+//        }
+
         // Read weather icon ID from cursor
         //int weatherId = cursor.getInt(ForecastFragment.COL_WEATHER_ID);
         ViewHolder viewHolder = (ViewHolder) view.getTag();
@@ -173,4 +181,8 @@ public class ForecastAdapter extends CursorAdapter{
     public int getViewTypeCount() {
         return 2;
     }
+
+//    public void setSelected(int position, boolean isSelected) {
+//        selectionArray.put(position, isSelected);
+//    }
 }
