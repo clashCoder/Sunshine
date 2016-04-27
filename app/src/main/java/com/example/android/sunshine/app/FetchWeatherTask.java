@@ -356,7 +356,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
         String format = "json";
         String units = "metric";
         int numDays = 14;
-        String appid = "insert_API_Key_here";      // insert API Key here or put in
+        String appid = "insert_API_key_here";      // insert API Key here or put in
                                                     // Android Manifest and buildConfig
 
         try {

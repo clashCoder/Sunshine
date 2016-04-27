@@ -30,6 +30,11 @@ public class ForecastFragment extends android.support.v4.app.Fragment
 
 
     private ForecastAdapter weatherAdapter;        //weather adapter for weather forecast
+    private ListView mListView;
+    private static final int NO_SELECTION_YET = -1;
+    private int mPosition = NO_SELECTION_YET;
+    private static final String SELECTION_KEY = "selected_position";
+    private boolean mUseTodayLayout;
 
     /**
      * A callback interface that all activities containing this fragment must implement.
@@ -42,7 +47,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment
         public void onItemSelected(Uri dateUri);
     }
 
-    private ListView listView;
+    //private ListView listView;
     private static final int FORECAST_LOADER_ID = 0;
     private static final String[] FORECAST_COLUMNS = {
             // In this case the id needs to be fully qualified with a table name, since
@@ -186,11 +191,12 @@ public class ForecastFragment extends android.support.v4.app.Fragment
         });*/
 
         weatherAdapter = new ForecastAdapter(getActivity(), null, 0);
+        weatherAdapter.setUseTodayLayout(mUseTodayLayout);
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        listView = (ListView) rootView.findViewById(R.id.listview_forecast);
-        listView.setAdapter(weatherAdapter);
+        mListView = (ListView) rootView.findViewById(R.id.listview_forecast);
+        mListView.setAdapter(weatherAdapter);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView adapterView, View view, int position, long l) {
@@ -212,8 +218,15 @@ public class ForecastFragment extends android.support.v4.app.Fragment
                                     locationSetting, cursor.getLong(COL_WEATHER_DATE)
                             ));
                 }
+                mPosition = position;
             }
         });
+
+        if (savedInstanceState != null && savedInstanceState.containsKey(SELECTION_KEY)) {
+            mPosition = savedInstanceState.getInt(SELECTION_KEY);
+        }
+
+        weatherAdapter.setUseTodayLayout(mUseTodayLayout);
 
         return rootView;
     }
@@ -274,6 +287,12 @@ public class ForecastFragment extends android.support.v4.app.Fragment
         // Swap the new cursor in. (The framework will take care of closing
         // the old cursor once we return.)
         weatherAdapter.swapCursor(data);
+
+        if (mPosition != NO_SELECTION_YET) {
+            // If we don't need to restart the loader, and there's a desired position
+            // to restore to, do so now.
+            mListView.smoothScrollToPosition(mPosition);
+        }
     }
 
     @Override
@@ -284,6 +303,25 @@ public class ForecastFragment extends android.support.v4.app.Fragment
         weatherAdapter.swapCursor(null);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+
+        // When tablets rotate, the currently selected list item needs to be saved.
+        // When no item is selected, mPosition will be set to NO_SELECTION_YET,
+        // so check for that before storing.
+        if (mPosition != NO_SELECTION_YET) {
+            outState.putInt(SELECTION_KEY,mPosition);
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    public void setUseTodayLayout(boolean useTodayLayout) {
+        mUseTodayLayout = useTodayLayout;
+
+        if (weatherAdapter != null) {
+            weatherAdapter.setUseTodayLayout(mUseTodayLayout);
+        }
+    }
 //    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 //
 //        private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();

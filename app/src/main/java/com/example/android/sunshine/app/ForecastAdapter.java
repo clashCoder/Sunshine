@@ -14,6 +14,9 @@ public class ForecastAdapter extends CursorAdapter{
     private final String LOG_TAG = "ForecastAdapter";
     private final int VIEW_TYPE_TODAY = 0;
     private final int VIEW_TYPE_FUTURE_DAY = 1;
+
+    // Flag to determine if we want to use a separate view for "today"
+    private boolean mUseTodayLayout = true;
     //SparseBooleanArray selectionArray = new SparseBooleanArray();
     public ForecastAdapter(Context context, Cursor c, int flags) {
         super(context,c,flags);
@@ -174,12 +177,16 @@ public class ForecastAdapter extends CursorAdapter{
 
     @Override
     public int getItemViewType(int position) {
-        return (position == 0) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
+        return (position == 0 && mUseTodayLayout) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
     }
 
     @Override
     public int getViewTypeCount() {
         return 2;
+    }
+
+    public void setUseTodayLayout(boolean useTodayLayout) {
+        mUseTodayLayout = useTodayLayout;
     }
 
 //    public void setSelected(int position, boolean isSelected) {
