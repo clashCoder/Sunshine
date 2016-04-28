@@ -39,6 +39,8 @@ public class MainActivity extends ActionBarActivity implements ForecastFragment.
             }
         } else {
             mTwoPane = false;
+            // get rid of unecessary default shadow below the action bar
+            getSupportActionBar().setElevation(0f);
         }
 //        if (savedInstanceState == null) {
 //            getSupportFragmentManager().beginTransaction()

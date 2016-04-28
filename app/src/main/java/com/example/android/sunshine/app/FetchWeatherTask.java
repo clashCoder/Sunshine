@@ -18,9 +18,11 @@ package com.example.android.sunshine.app;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.text.format.Time;
 import android.util.Log;
 
@@ -37,6 +39,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Vector;
 
 public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
@@ -55,18 +59,18 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
     /* The date/time conversion code is going to be moved outside the asynctask later,
      * so for convenience we're breaking it out into its own method now.
      */
-    /*private String getReadableDateString(long time){
+    private String getReadableDateString(long time){
         // Because the API returns a unix timestamp (measured in seconds),
         // it must be converted to milliseconds in order to be converted to valid date.
         Date date = new Date(time);
         SimpleDateFormat format = new SimpleDateFormat("E, MMM d");
         return format.format(date).toString();
-    }*/
+    }
 
     /**
      * Prepare the weather high/lows for presentation.
      */
-    /*private String formatHighLows(double high, double low) {
+    private String formatHighLows(double high, double low) {
         // Data is fetched in Celsius by default.
         // If user prefers to see in Fahrenheit, convert the values here.
         // We do this rather than fetching in Fahrenheit so that the user can
@@ -91,7 +95,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
         String highLowStr = roundedHigh + "/" + roundedLow;
         return highLowStr;
-    }*/
+    }
 
     /**
      * Helper method to handle insertion of a new location in the weather database.
@@ -150,7 +154,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
         the UX expects so that we can continue to test the application even once we begin using
         the database.
      */
-    /*String[] convertContentValuesToUXFormat(Vector<ContentValues> cvv) {
+    String[] convertContentValuesToUXFormat(Vector<ContentValues> cvv) {
         // return strings to keep UI functional for now
         String[] resultStrs = new String[cvv.size()];
         for ( int i = 0; i < cvv.size(); i++ ) {
@@ -164,7 +168,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                     " - " + highAndLow;
         }
         return resultStrs;
-    }*/
+    }
 
     /**
      * Take the String representing the complete forecast in JSON Format and
@@ -448,9 +452,9 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                     Log.e(LOG_TAG, "Error close stream", e);
                 }
             }
-            return null;
         }
         // This will only happen if there was an error getting or parsing the forecast.
+        return null;
     }
 
     /*@Override
