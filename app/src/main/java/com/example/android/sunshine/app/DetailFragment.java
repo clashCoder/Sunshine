@@ -208,6 +208,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             // Read low temperature from cursor and update view
             double low = data.getDouble(COL_WEATHER_MIN_TEMP);
             String lowString = Utility.formatTemperature(getActivity(), low, isMetric);
+            mLowTempView.setText(lowString);
 
             // Read humidity from cursor and update view
             float humidity = data.getFloat(COL_WEATHER_HUMIDITY);
