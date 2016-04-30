@@ -156,6 +156,9 @@ public class ForecastAdapter extends CursorAdapter{
         //descriptionView.setText(description);
         viewHolder.descriptionView.setText(description);
 
+        // For accesibility, add a content description to the icon field
+        viewHolder.iconView.setContentDescription(description);
+
         // Read user preference for metric or imperial temperature units.
         boolean isMetric = Utility.isMetric(context);
 
