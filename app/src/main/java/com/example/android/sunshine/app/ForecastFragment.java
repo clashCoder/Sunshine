@@ -1,10 +1,9 @@
 package com.example.android.sunshine.app;
 
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -18,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.example.android.sunshine.app.data.WeatherContract;
+import com.example.android.sunshine.app.service.SunshineService;
 
 /**
  * Created by itachiuchiha on 3/1/16.
@@ -232,16 +232,20 @@ public class ForecastFragment extends android.support.v4.app.Fragment
     }
 
     private void updateWeather() {
-        FetchWeatherTask fetchWeatherTask = new FetchWeatherTask(getActivity());
-
-        //Context context = getActivity();
-        //SharedPreferences userPref = context.getSharedPreferences("pref_general", Context.MODE_PRIVATE);
-
-        SharedPreferences userPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String zipCode = userPref.getString(getString(R.string.pref_location_key),getString(R.string.pref_location_default));
-        //fetchWeatherTask.execute("94040");
-        //Log.v("IN_OPTIONS", "Zipcode String: " + zipCode);
-        fetchWeatherTask.execute(zipCode);
+//        FetchWeatherTask fetchWeatherTask = new FetchWeatherTask(getActivity());
+//
+//        //Context context = getActivity();
+//        //SharedPreferences userPref = context.getSharedPreferences("pref_general", Context.MODE_PRIVATE);
+//
+//        SharedPreferences userPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//        String zipCode = userPref.getString(getString(R.string.pref_location_key),getString(R.string.pref_location_default));
+//        //fetchWeatherTask.execute("94040");
+//        //Log.v("IN_OPTIONS", "Zipcode String: " + zipCode);
+//        fetchWeatherTask.execute(zipCode);
+        Intent intent = new Intent(getActivity(), SunshineService.class);
+        intent.putExtra(SunshineService.LOCATION_QUERY_EXTRA,
+                Utility.getPreferredLocation(getActivity()));
+        getActivity().startService(intent);
     }
 
     void onLocationChanged() {
