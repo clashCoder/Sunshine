@@ -1,11 +1,13 @@
 package com.example.android.sunshine.app;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -34,6 +36,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment
     private int mPosition = NO_SELECTION_YET;
     private static final String SELECTION_KEY = "selected_position";
     private boolean mUseTodayLayout;
+    public static final String LOG_TAG = ForecastFragment.class.getSimpleName();
 
     /**
      * A callback interface that all activities containing this fragment must implement.
@@ -105,6 +108,11 @@ public class ForecastFragment extends android.support.v4.app.Fragment
 
         if (id == R.id.action_refresh) {
             updateWeather();
+            return true;
+        }
+
+        if (id == R.id.action_map) {
+            openPreferredLocationInMap();
             return true;
         }
 
@@ -332,6 +340,30 @@ public class ForecastFragment extends android.support.v4.app.Fragment
 
         if (weatherAdapter != null) {
             weatherAdapter.setUseTodayLayout(mUseTodayLayout);
+        }
+    }
+
+    private void openPreferredLocationInMap() {
+        if ( null != weatherAdapter) {
+            Cursor c = weatherAdapter.getCursor();
+            if ( null != c) {
+                c.moveToPosition(0);
+                String posLat = c.getString(COL_COORD_LAT);
+                String posLong = c.getString(COL_COORD_LONG);
+                // Using the URI scheme for showing a location found on a map. This super-handy
+                // intent is detailed in the "Common Intents" page of Android's developer site:
+                // http://developer.android.com/guide/components/intents-common.html#Maps
+                Uri geoLocation = Uri.parse("geo:" + posLat + "," + posLong);
+
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(geoLocation);
+
+                if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    startActivity(intent);
+                } else {
+                    Log.d(LOG_TAG, "Couldn't call " + geoLocation.toString() + ", no receiving apps installed!");
+                }
+            }
         }
     }
 //    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
