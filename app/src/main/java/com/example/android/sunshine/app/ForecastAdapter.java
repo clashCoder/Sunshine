@@ -167,7 +167,7 @@ public class ForecastAdapter extends CursorAdapter{
         // Find TextView and set formatted high temperature on it.
         //TextView highView = (TextView) view.findViewById(R.id.list_item_high_textview);
         //highView.setText(Utility.formatTemperature(high, isMetric));
-        viewHolder.highTempView.setText(Utility.formatTemperature(context, high, isMetric));
+        viewHolder.highTempView.setText(Utility.formatTemperature(context, high));
 
 
         // Read low temperature from cursor
@@ -175,7 +175,7 @@ public class ForecastAdapter extends CursorAdapter{
         // Find TextView and set formatted low temperature on it
         //TextView lowView = (TextView) view.findViewById(R.id.list_item_low_textview);
         //lowView.setText(Utility.formatTemperature(low, isMetric));
-        viewHolder.lowTempView.setText(Utility.formatTemperature(context, low, isMetric));
+        viewHolder.lowTempView.setText(Utility.formatTemperature(context, low));
     }
 
     @Override
