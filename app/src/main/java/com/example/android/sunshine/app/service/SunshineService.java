@@ -36,7 +36,10 @@ public class SunshineService extends IntentService {
 
     @Override
     protected  void onHandleIntent(Intent intent) {
-        String locationQuery = intent.getStringExtra(LOCATION_QUERY_EXTRA);
+
+        final String locationQuery = intent.getStringExtra(LOCATION_QUERY_EXTRA);
+        String locationParam = locationQuery + ",US";
+
 
 // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
@@ -69,14 +72,15 @@ public class SunshineService extends IntentService {
             //      .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
             // and add necessary build in gradle
             Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                    .appendQueryParameter(QUERY_PARAM, locationQuery)
+                    .appendQueryParameter(QUERY_PARAM, locationParam)
                     .appendQueryParameter(FORMAT_PARAM, format)
                     .appendQueryParameter(UNITS_PARAM, units)
                     .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
                     .appendQueryParameter(APPID_PARAM, appid)
                     .build();
 
-
+            String urlString = builtUri.toString();
+            Log.v(LOG_TAG, "url is: " + urlString);
             URL url = new URL(builtUri.toString());
 
             // Create the request to OpenWeatherMap, and open the connection
@@ -177,6 +181,10 @@ public class SunshineService extends IntentService {
             double cityLatitude = cityCoord.getDouble(OWM_LATITUDE);
             double cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
 
+            Log.v(LOG_TAG, "city: " + cityName);
+            Log.v(LOG_TAG, "lat: " + cityLatitude);
+            Log.v(LOG_TAG, "long: " + cityLongitude);
+
             long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
 
             // Insert the new weather information into the database
@@ -238,6 +246,14 @@ public class SunshineService extends IntentService {
                 low = temperatureObject.getDouble(OWM_MIN);
 
                 ContentValues weatherValues = new ContentValues();
+
+//                Log.v(LOG_TAG, "locationId: " + locationId);
+//                Log.v(LOG_TAG, "Date: " + dateTime);
+//                Log.v(LOG_TAG, "humidity: " + humidity);
+//                Log.v(LOG_TAG, "pressure: " + pressure);
+//                Log.v(LOG_TAG, "max temp: " + high);
+//                Log.v(LOG_TAG, "low temp: " + low);
+
 
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationId);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE, dateTime);

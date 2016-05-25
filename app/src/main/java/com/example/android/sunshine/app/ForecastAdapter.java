@@ -3,6 +3,7 @@ package com.example.android.sunshine.app;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.widget.CursorAdapter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -176,6 +177,12 @@ public class ForecastAdapter extends CursorAdapter{
         //TextView lowView = (TextView) view.findViewById(R.id.list_item_low_textview);
         //lowView.setText(Utility.formatTemperature(low, isMetric));
         viewHolder.lowTempView.setText(Utility.formatTemperature(context, low, isMetric));
+
+        // Log statements to check for longitude and latitude
+        double latitude = cursor.getDouble(ForecastFragment.COL_COORD_LAT);
+        double longitude = cursor.getDouble(ForecastFragment.COL_COORD_LONG);
+
+        Log.v(LOG_TAG, "latitude: " + Double.toString(latitude) + ", longitude: " + Double.toString(longitude));
     }
 
     @Override
