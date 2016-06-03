@@ -73,6 +73,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         Log.d(LOG_TAG, "onPerformSync Called.");
         //String locationQuery = intent.getStringExtra(LOCATION_QUERY_EXTRA);
         String locationQuery = Utility.getPreferredLocation(getContext());
+        String locationParam = locationQuery + ",US";
 
 // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
@@ -85,7 +86,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         String format = "json";
         String units = "metric";
         int numDays = 14;
-        String appid = "insert_API_Key_here";      // insert API Key here or put in
+        String appid = "insert_API_key_here";      // insert API Key here or put in
         // Android Manifest and buildConfig
 
         try {
@@ -105,7 +106,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             //      .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
             // and add necessary build in gradle
             Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                    .appendQueryParameter(QUERY_PARAM, locationQuery)
+                    .appendQueryParameter(QUERY_PARAM, locationParam)
                     .appendQueryParameter(FORMAT_PARAM, format)
                     .appendQueryParameter(UNITS_PARAM, units)
                     .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
