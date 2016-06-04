@@ -41,12 +41,7 @@ public class MainActivity extends ActionBarActivity implements ForecastFragment.
             // get rid of unecessary default shadow below the action bar
             getSupportActionBar().setElevation(0f);
         }
-//        if (savedInstanceState == null) {
-//            getSupportFragmentManager().beginTransaction()
-//                    .add(R.id.container, new ForecastFragment(), FORECASTFRAGMENT_TAG)
-//                    .commit();
-//        }
-        //Log.v(LOG_TAG, "onCreate() called.\n");
+
         ForecastFragment forecastFragment = (ForecastFragment)getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_forecast);
         forecastFragment.setUseTodayLayout(!mTwoPane);
@@ -74,65 +69,19 @@ public class MainActivity extends ActionBarActivity implements ForecastFragment.
             startActivity(settingsIntent);
             return true;
         }
-
-//        if (id == R.id.action_map) {
-//            //TODO: Intent to view preferred Location
-//
-//            getPreferredLocationInMap();
-//            /*SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-//
-//            String zipCode = sharedPreferences.getString(getString(R.string.pref_location_key),
-//                    getString(R.string.pref_location_default));
-//
-//            Intent intent = new Intent(Intent.ACTION_VIEW);
-//            Uri geoLocation = Uri.parse("geo:0,0?").buildUpon()
-//                    .appendQueryParameter("q", zipCode)
-//                    .build();
-//            intent.setData(geoLocation);
-//
-//            if (intent.resolveActivity(getPackageManager()) != null) {
-//                startActivity(intent);
-//            }
-//            else {
-//                Log.d(LOG_TAG, "No apps installed to view" + zipCode);
-//            }*/
-//
-//        }
-
         return super.onOptionsItemSelected(item);
     }
 
-//    private void getPreferredLocationInMap() {
-//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-//
-//        String zipCode = sharedPreferences.getString(getString(R.string.pref_location_key),
-//                getString(R.string.pref_location_default));
-//
-//        Intent intent = new Intent(Intent.ACTION_VIEW);
-//        Uri geoLocation = Uri.parse("geo:0,0?").buildUpon()
-//                .appendQueryParameter("q", zipCode)
-//                .build();
-//        intent.setData(geoLocation);
-//
-//        if (intent.resolveActivity(getPackageManager()) != null) {
-//            startActivity(intent);
-//        }
-//        else {
-//            Log.d(LOG_TAG, "No apps installed to view" + zipCode);
-//        }
-//
-//    }
 
     @Override
     protected  void onStart() {
         super.onStart();
-        //Log.v(LOG_TAG, "onStart() called.\n");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //Log.v(LOG_TAG, "onResume() called.\n");
+
         String location = Utility.getPreferredLocation(this);
 
         // update the location in our second panel using the fragment manager
@@ -152,20 +101,17 @@ public class MainActivity extends ActionBarActivity implements ForecastFragment.
     @Override
     protected void onPause() {
         super.onPause();
-        //Log.v(LOG_TAG, "onPause() called.\n");
     }
 
 
     @Override
     protected void onStop() {
         super.onStop();
-        //Log.v(LOG_TAG, "onStop() called.\n");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //Log.v(LOG_TAG, "onDestroy() called.\n");
     }
 
     @Override

@@ -144,22 +144,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-//        Log.v(LOG_TAG, "In onCreateLoader");
-//        Intent intent = getActivity().getIntent();
-//
-//        if (intent == null || intent.getData() == null) {
-//            return null;
-//        }
-
-
-//        return new CursorLoader(
-//                getActivity(),
-//                intent.getData(),
-//                DETAIL_COLUMNS,
-//                null,
-//                null,
-//                null
-//        );
 
         if (mUri != null) {
             // Now create and return a CursorLoader that will take care of
@@ -181,8 +165,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         if (data != null && data.moveToFirst()) {
             // Read weather condition ID from cursor
             int weatherId = data.getInt(COL_WEATHER_CONDITION_ID);
-            // Use placeholder Image
-            //mIconView.setImageResource(R.drawable.ic_launcher);
 
             // Use weather art image
             mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
